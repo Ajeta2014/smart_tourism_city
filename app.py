@@ -1,35 +1,62 @@
+
 import streamlit as st
 import plotly.graph_objects as go
 import numpy as np
 
-st.set_page_config(page_title="Smart City 3D Realista", layout="wide")
-st.title("🏙️ Smart City Turística Inteligente (3D)")
+st.set_page_config(page_title="Smart Tourism City 3D", layout="wide")
+st.title("🏙️ Smart Tourism City 3D – Urbana + Turística")
 
 fig = go.Figure()
 
-# Função para adicionar prédios
-def add_building(x, y, width, depth, height, color='gray'):
-    X = [x, x+width, x+width, x, x, x+width, x+width, x]
-    Y = [y, y, y+depth, y+depth, y, y, y+depth, y+depth]
-    Z = [0,0,0,0,height,height,height,height]
-    fig.add_trace(go.Mesh3d(
-        x=X, y=Y, z=Z, color=color, opacity=0.9
-    ))
-
-# Função para adicionar casas com telhados
-def add_house(x, y, width, depth, height, roof_height, color='beige', roof_color='brown'):
-    # Corpo da casa
+# ------------------------------
+# Função para adicionar prédios detalhados
+# ------------------------------
+def add_building(x, y, width, depth, height, color='lightgray', window_color='yellow'):
+    # Corpo do prédio
     X = [x, x+width, x+width, x, x, x+width, x+width, x]
     Y = [y, y, y+depth, y+depth, y, y, y+depth, y+depth]
     Z = [0,0,0,0,height,height,height,height]
     fig.add_trace(go.Mesh3d(x=X, y=Y, z=Z, color=color, opacity=0.9))
-    # Telhado (pirâmide)
+
+    # Janelas (simples faixas horizontais)
+    n_floors = int(height/5)
+    for f in range(n_floors):
+        fig.add_trace(go.Mesh3d(
+            x=[x+1, x+width-1, x+width-1, x+1, x+1, x+width-1, x+width-1, x+1],
+            y=[y+1, y+1, y+depth-1, y+depth-1, y+1, y+1, y+depth-1, y+depth-1],
+            z=[f*5+1, f*5+1, f*5+1, f*5+1, f*5+4, f*5+4, f*5+4, f*5+4],
+            color=window_color,
+            opacity=0.6
+        ))
+
+# ------------------------------
+# Função para adicionar casas com telhados
+# ------------------------------
+def add_house(x, y, width, depth, height, roof_height, wall_color='beige', roof_color='brown', window_color='yellow'):
+    # Corpo da casa
+    X = [x, x+width, x+width, x, x, x+width, x+width, x]
+    Y = [y, y, y+depth, y+depth, y, y, y+depth, y+depth]
+    Z = [0,0,0,0,height,height,height,height]
+    fig.add_trace(go.Mesh3d(x=X, y=Y, z=Z, color=wall_color, opacity=0.9))
+
+    # Telhado pirâmide
     roof_X = [x, x+width, x+width/2]
     roof_Y = [y, y, y+depth/2]
     roof_Z = [height, height, height+roof_height]
     fig.add_trace(go.Mesh3d(x=roof_X, y=roof_Y, z=roof_Z, color=roof_color, opacity=1.0))
 
-# Função para adicionar árvores
+    # Janelas
+    fig.add_trace(go.Mesh3d(
+        x=[x+1, x+width-1, x+width-1, x+1, x+1, x+width-1, x+width-1, x+1],
+        y=[y+1, y+1, y+depth-1, y+depth-1, y+1, y+1, y+depth-1, y+depth-1],
+        z=[height/3, height/3, height/3, height/3, 2*height/3, 2*height/3, 2*height/3, 2*height/3],
+        color=window_color,
+        opacity=0.6
+    ))
+
+# ------------------------------
+# Função para adicionar árvores estilizadas
+# ------------------------------
 def add_tree(x, y, trunk_height=3, leaf_height=5):
     fig.add_trace(go.Cone(
         x=[x], y=[y], z=[trunk_height],
@@ -40,7 +67,9 @@ def add_tree(x, y, trunk_height=3, leaf_height=5):
         showscale=False
     ))
 
-# Gerar cidade
+# ------------------------------
+# Gerar a cidade urbana + turística
+# ------------------------------
 np.random.seed(42)
 cols, rows = 12, 10
 spacing_x, spacing_y = 30, 25
@@ -54,7 +83,9 @@ for i in range(cols):
         else:
             add_building(x, y, 15, 15, 20+np.random.rand()*40)
 
-# Praia costeira
+# ------------------------------
+# Adicionar praia costeira
+# ------------------------------
 fig.add_trace(go.Mesh3d(
     x=[-200, 200, 200, -200],
     y=[150, 150, 230, 230],
@@ -67,7 +98,9 @@ fig.add_trace(go.Mesh3d(
 for i in range(-180, 181, 20):
     add_tree(i, 190)
 
-# Configuração do layout
+# ------------------------------
+# Layout final
+# ------------------------------
 fig.update_layout(
     scene=dict(
         xaxis=dict(visible=False),
